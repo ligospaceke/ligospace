@@ -22,7 +22,7 @@ binding = "AI"
 
 [vars]
 SUPABASE_URL = "https://lpnnntuelgaisoiimuka.supabase.co"
-SITE_URL = "https://ligo-space.ligospace-ke.workers.dev"   # no trailing slash. Change to https://ligospace.co.ke once the domain is live
+SITE_URL = "https://ligo.ligospace-ke.workers.dev"   # no trailing slash. Change to https://ligospace.co.ke once the domain is live
 SIGNUP = "invite"                                          # "open" when ready for open registration
 FROM_EMAIL = "onboarding@resend.dev"                       # Resend's test sender only delivers to YOUR Resend account email. Verify your own domain in Resend before inviting others.
 # Secrets (set with: npx wrangler secret put NAME): SUPABASE_SERVICE_KEY, RESEND_API_KEY
