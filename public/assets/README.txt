@@ -1,6 +1,2 @@
-Optional photos (JPG, any missing one falls back to a colored gradient):
-slide1.jpg slide2.jpg slide3.jpg  hero carousel (wide, ~1600px)
-w1.jpg ... w6.jpg                 the six program cards (landscape/portrait ~800px)
-about1.jpg about2.jpg             About collage
-cta.jpg                           Partner call-to-action background
-banner.jpg                        inner-page banner background
+These .jpg files are placeholders. Replace any of them with a real photo using the SAME file name:
+slide1-3 (hero slides, wide ~1600px), w1-w6 (program cards ~900x700), about1/about2 (About collage), cta (partner section background), banner (inner-page banner).

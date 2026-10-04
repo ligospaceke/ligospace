@@ -1,4 +1,4 @@
-// js/components/chat.js: floating AI assistant. Talks to POST /api/chat (Workers AI) or a scripted demo.
+// js/components/chat.js: floating AI assistant. Talks to POST /api/chat (Workers AI).
 import { h } from '../core/dom.js';
 import { api } from '../data/api.js';
 import { ENV } from '../data/env.js';

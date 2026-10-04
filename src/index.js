@@ -66,7 +66,10 @@ export default{async fetch(req,env){
    await env.DB.prepare('INSERT INTO submissions(type,payload) VALUES(?1,?2)').bind(P[0]==='intro'?'intro':'application',JSON.stringify(b)).run();return J({ok:true})}
   if(M==='POST'&&P[0]==='chat'){const m=((await body()).messages||[]).slice(-8).filter(x=>x&&(x.role==='user'||x.role==='assistant')&&typeof x.content==='string').map(x=>({role:x.role,content:x.content.slice(0,600)}));
    if(!m.length)return J({error:'No message'},400);const r=await env.AI.run('@cf/meta/llama-3.1-8b-instruct',{messages:[{role:'system',content:SYS},...m],max_tokens:260});return J({reply:(r.response||'').trim()||'Please use the Contact page.'})}
+  if(M==='GET'&&P[0]==='impact'){const {results}=await env.DB.prepare('SELECT k,label AS l,target,achieved,verified FROM impact ORDER BY sort').all();return J(results)}
   if(P[0]==='admin'){need('admin');
+   if(M==='PUT'&&P[1]==='impact'){const b=await body(),n=v=>Math.max(0,Math.min(1e9,parseInt(v)||0)),ach=n(b.achieved);
+    await env.DB.prepare('UPDATE impact SET target=?1,achieved=?2,verified=?3,updated=CURRENT_TIMESTAMP WHERE k=?4').bind(n(b.target),ach,Math.min(n(b.verified),ach),String(b.k)).run();return J({ok:true})}
    if(M==='GET'&&P[1]==='queue'){const a=await env.DB.prepare('SELECT p.slug,u.email,p.pending FROM profiles p JOIN users u ON u.id=p.user_id WHERE p.pending IS NOT NULL').all();
     const s=await env.DB.prepare("SELECT id,type,payload FROM submissions WHERE status='new' ORDER BY id DESC LIMIT 100").all();
     return J({profiles:a.results.map(r=>({slug:r.slug,email:r.email,pending:JSON.parse(r.pending)})),subs:s.results.map(r=>({id:r.id,type:r.type,payload:JSON.parse(r.payload)}))})}

@@ -1,7 +1,7 @@
-// js/data/env.js: the ONLY switches to flip when the Cloudflare backend is live
+// js/data/env.js
 export const ENV={
- API:'/api',       // '/api' = live backend (same domain as the Worker). Use '' for browser-only demo mode.
- SIGNUP:'invite',   // 'invite' = only approved emails can sign in. 'open' = anyone can sign up and wait as pending (also set SIGNUP in worker/wrangler.toml).
- CHAT:true,         // show the AI chat widget
+ API:'/api',        // the Cloudflare Worker, same domain as the site
+ SIGNUP:'invite',   // 'invite' = only approved emails can sign in; 'open' = anyone can sign up and wait as pending (also set SIGNUP in wrangler.toml)
+ CHAT:true,
  FOUNDER:'samuel-mk'
 };

@@ -6,10 +6,10 @@ import { api } from '../data/api.js';
 import { ENV } from '../data/env.js';
 import { PROGRAMS, RESTRICTED, slug } from '../data/content.js';
 const F=(l,el)=>h('label',{},l,el);
-export const Account=()=>{const root=h('main'),show=(...c)=>root.replaceChildren(Section(null,!ENV.API&&h('div',{class:'note'},'Demo mode: accounts and profiles are stored only in this browser until the Cloudflare backend is connected. Do not ask real contributors to register yet. Demo admin: admin@ligospace.demo'),c));
+export const Account=()=>{const root=h('main'),show=(...c)=>root.replaceChildren(Section(null,c));
  const login=msg=>{const em=h('input',{type:'email',required:true,autocomplete:'email'}),out=h('p',{role:'status'},msg||'');
   show(h('h2',{},'Sign in'),h('p',{},ENV.SIGNUP==='open'?'Enter your email to sign in or create an account. New accounts wait for admin approval.':'Accounts are by invitation. Use the email you applied with once the L.I.G.O. SPACE team has approved you.'),
-   h('form',{onsubmit:e=>{e.preventDefault();api.login(em.value).then(r=>r.demo?init():(out.textContent='If this email is approved, a sign-in link is on its way. Check your inbox.')).catch(x=>out.textContent=x.message)}},F('Email',em),h('button',{class:'btn',type:'submit'},'Continue')),out,
+   h('form',{onsubmit:e=>{e.preventDefault();out.textContent='Sending\u2026';api.login(em.value).then(()=>out.textContent='If this email is approved, a sign-in link is on its way. Check your inbox and spam folder.').catch(x=>out.textContent=x.message)}},F('Email',em),h('button',{class:'btn',type:'submit'},'Continue')),out,
    h('p',{style:'margin-top:18px'},'Not a member yet? ',Link('/engage/involve','Choose how you would like to get involved')));};
  const dash=({user,profile})=>{const cur=profile?(profile.pending||profile.live):null,v=cur||{programs:[],links:{}};let photo=v.photo||'';
   const name=h('input',{name:'name',required:true,maxlength:80,value:v.name||''}),head=h('input',{maxlength:120,value:v.headline||''}),bio=h('textarea',{rows:6,maxlength:1500},v.bio||''),video=h('input',{type:'url',placeholder:'https://youtube.com/...',value:v.video||''}),
