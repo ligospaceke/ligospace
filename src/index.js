@@ -1,0 +1,83 @@
+// worker/src/index.js: L.I.G.O. SPACE API (D1 + Supabase Storage + Workers AI). Same routes as js/data/api.js demo engine.
+const RESTRICTED=['children-vulnerable-communities'];
+const J=(o,s=200,h={})=>new Response(JSON.stringify(o),{status:s,headers:{'content-type':'application/json',...h}});
+const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+const rnd=()=>hex(crypto.getRandomValues(new Uint8Array(24)));
+const sha=async s=>hex(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)));
+const url=u=>/^https?:\/\//i.test(u||'');
+const slugify=t=>String(t).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)||'member';
+const okPhoto=(p,env)=>p.startsWith('/api/media/')||p.startsWith(env.SUPABASE_URL+'/storage/v1/object/public/ligo-public/');
+const SB=env=>({authorization:'Bearer '+env.SUPABASE_SERVICE_KEY,apikey:env.SUPABASE_SERVICE_KEY});
+const clean=(b,env)=>({name:String(b.name||'').slice(0,80),headline:String(b.headline||'').slice(0,120),bio:String(b.bio||'').slice(0,1500),
+ programs:(Array.isArray(b.programs)?b.programs:[]).slice(0,6).map(String),photo:okPhoto(String(b.photo||''),env)?String(b.photo):'',video:url(b.video)?b.video:'',
+ links:Object.fromEntries(Object.entries(b.links||{}).filter(([,v])=>url(v)).slice(0,8))});
+const strip=o=>RESTRICTED.some(r=>o.programs.includes(r))?{...o,links:{},video:'',restricted:true}:o;   // children/vulnerable: no direct contact, ever
+const full=r=>strip({slug:r.slug,founder:r.founder,...JSON.parse(r.live)});
+const sum=r=>{const o=full(r);return{...o,bio:undefined,summary:o.bio.slice(0,160)}};
+const SYS=`You are the assistant on the L.I.G.O. SPACE website. L.I.G.O. SPACE is a human-centered institution rooted in Kajiado South, Kenya, founded by Samuel M.K. Motto: Humanity First. Every Life Matters. What Crowns Us: Love. Official launch: 5 December 2026. It connects people with dignity, education, opportunity, skills, technology and enterprise. Members are independent providers; L.I.G.O. SPACE connects people and does not guarantee services. Visitors choose a pathway on the Partner with us or Get involved pages. Operational: community outreach, youth mentorship, talent and creativity. Developing: digital library, AI learning assistant, Opportunity Circle. Future and NOT available: vocational training center (subject to TVETA), SACCO (subject to SASRA, no financial products offered), university (long-term vision, subject to CUE), app, academy. Never claim future items exist. Never invent impact numbers, people, prices or dates. If unsure, say so and point to the Contact page (phone +254 791 236 179). Keep answers under 90 words, warm and plain. Do not ask for or store personal data.`;
+async function mail(env,to,subject,text){if(!env.RESEND_API_KEY){console.log('MAIL',to,text);return}
+ await fetch('https://api.resend.com/emails',{method:'POST',headers:{authorization:'Bearer '+env.RESEND_API_KEY,'content-type':'application/json'},body:JSON.stringify({from:env.FROM_EMAIL,to,subject,text})})}
+async function who(req,env){const sid=/(?:^|; )sid=([a-f0-9]+)/.exec(req.headers.get('cookie')||'')?.[1];if(!sid)return null;
+ return env.DB.prepare('SELECT u.* FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.hash=?1 AND s.exp>?2 AND u.status!=\'disabled\'').bind(await sha(sid),Date.now()).first()}
+export default{async fetch(req,env){
+ const u=new URL(req.url),P=u.pathname.replace(/^\/api\//,'').split('/'),M=req.method;
+ if(!u.pathname.startsWith('/api/')&&env.ASSETS)return env.ASSETS.fetch(req);   // the website itself
+ const SITE=String(env.SITE_URL||'').replace(/\/+$/,'');   // tolerate a trailing slash in SITE_URL
+ try{
+  const body=async()=>{const t=await req.text();if(t.length>12000)throw new Error('Too large');return t?JSON.parse(t):{}};
+  const me=await who(req,env),need=r=>{if(!me)throw new Error('Please sign in');if(r&&me.role!==r)throw new Error('Admins only')};
+  if(M==='GET'&&P[0]==='team'){
+   if(P[1]){const r=await env.DB.prepare('SELECT * FROM profiles WHERE slug=?1 AND live IS NOT NULL AND hidden=0').bind(P[1]).first();return r?J(full(r)):J({error:'Not found'},404)}
+   const g=u.searchParams.get('program')||'';
+   const {results}=await env.DB.prepare("SELECT * FROM profiles WHERE live IS NOT NULL AND hidden=0 AND (?1='' OR EXISTS(SELECT 1 FROM json_each(json_extract(live,'$.programs')) WHERE value=?1)) ORDER BY founder DESC,updated DESC LIMIT 200").bind(g).all();
+   return J(results.map(sum))}
+  if(M==='POST'&&P[0]==='auth'&&P[1]==='login'){const e=String((await body()).email||'').trim().toLowerCase().slice(0,120);
+   if(/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)){let usr=await env.DB.prepare('SELECT * FROM users WHERE email=?1').bind(e).first();
+    if(!usr&&env.SIGNUP==='open'){await env.DB.prepare("INSERT INTO users(email,status) VALUES(?1,'pending')").bind(e).run();usr=await env.DB.prepare('SELECT * FROM users WHERE email=?1').bind(e).first()}
+    const recent=usr&&await env.DB.prepare('SELECT 1 AS x FROM login_tokens WHERE user_id=?1 AND exp>?2').bind(usr.id,Date.now()+84e4).first();   // one link per minute per person: stops email bombing
+    if(usr&&usr.status!=='disabled'&&!recent){const t=rnd();await env.DB.prepare('INSERT INTO login_tokens VALUES(?1,?2,?3)').bind(await sha(t),usr.id,Date.now()+9e5).run();
+     await mail(env,e,'Your L.I.G.O. SPACE sign-in link',`Sign in: ${SITE}/api/auth/verify?token=${t}\nThis link works once and expires in 15 minutes.`)}}
+   return J({ok:true})}   // same answer for everyone: never reveals who has an account
+  if(M==='GET'&&P[0]==='auth'&&P[1]==='verify'){const t=u.searchParams.get('token')||'',h=await sha(t);
+   const r=await env.DB.prepare('SELECT * FROM login_tokens WHERE hash=?1 AND exp>?2').bind(h,Date.now()).first();if(!r)return new Response('Link expired or already used.',{status:400});
+   await env.DB.prepare('DELETE FROM login_tokens WHERE hash=?1').bind(h).run();const sid=rnd();await env.DB.prepare('INSERT INTO sessions VALUES(?1,?2,?3)').bind(await sha(sid),r.user_id,Date.now()+2592e6).run();
+   return new Response(null,{status:302,headers:{location:SITE+'/#/account','set-cookie':`sid=${sid}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000`}})}
+  if(M==='POST'&&P[0]==='auth'&&P[1]==='logout'){if(me){const sid=/sid=([a-f0-9]+)/.exec(req.headers.get('cookie')||'')[1];await env.DB.prepare('DELETE FROM sessions WHERE hash=?1').bind(await sha(sid)).run()}return J({ok:true},200,{'set-cookie':'sid=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0'})}
+  if(M==='GET'&&P[0]==='me'&&!P[1]){need();const p=await env.DB.prepare('SELECT slug,live,pending,hidden,note FROM profiles WHERE user_id=?1').bind(me.id).first();
+   return J({user:{email:me.email,role:me.role,status:me.status},profile:p?{slug:p.slug,hidden:p.hidden,note:p.note,live:p.live&&JSON.parse(p.live),pending:p.pending&&JSON.parse(p.pending)}:null})}
+  if(M==='PUT'&&P[0]==='me'&&P[1]==='profile'){need();const b=await body();if(b.consent!==true)return J({error:'Consent is required'},400);const c=clean(b,env);if(!c.name)return J({error:'Name is required'},400);
+   const ex=await env.DB.prepare('SELECT slug FROM profiles WHERE user_id=?1').bind(me.id).first();
+   if(ex)await env.DB.prepare("UPDATE profiles SET pending=?1,note='',updated=CURRENT_TIMESTAMP WHERE user_id=?2").bind(JSON.stringify(c),me.id).run();
+   else await env.DB.prepare('INSERT INTO profiles(slug,user_id,pending) VALUES(?1,?2,?3)').bind(slugify(c.name)+'-'+rnd().slice(0,4),me.id,JSON.stringify(c)).run();
+   return J({ok:true})}
+  if(M==='PUT'&&P[0]==='me'&&P[1]==='visibility'){need();await env.DB.prepare('UPDATE profiles SET hidden=?1 WHERE user_id=?2').bind((await body()).hidden?1:0,me.id).run();return J({ok:true})}
+  if(M==='POST'&&P[0]==='media'){need();const ct=req.headers.get('content-type')||'';if(!/^image\/(png|jpeg|webp)$/.test(ct))return J({error:'PNG, JPG or WebP only'},400);
+   const buf=await req.arrayBuffer();if(buf.byteLength>2e6)return J({error:'Image must be under 2 MB'},400);
+   const key=`u${me.id}/${rnd()}`;const up=await fetch(`${env.SUPABASE_URL}/storage/v1/object/ligo-pending/${key}`,{method:'POST',headers:{...SB(env),'content-type':ct},body:buf});
+   if(!up.ok)return J({error:'Upload failed'},502);await env.DB.prepare('INSERT INTO media(key,user_id) VALUES(?1,?2)').bind(key,me.id).run();return J({url:'/api/media/'+key})}
+  if(M==='GET'&&P[0]==='media'){const key=P.slice(1).join('/'),r=await env.DB.prepare('SELECT * FROM media WHERE key=?1').bind(key).first();
+   if(!r)return new Response('Not found',{status:404});
+   if(r.status==='approved')return Response.redirect(`${env.SUPABASE_URL}/storage/v1/object/public/ligo-public/${key}`,302);
+   if(!me||!(me.id===r.user_id||me.role==='admin'))return new Response('Not found',{status:404});
+   const o=await fetch(`${env.SUPABASE_URL}/storage/v1/object/ligo-pending/${key}`,{headers:SB(env)});if(!o.ok)return new Response('Not found',{status:404});
+   return new Response(o.body,{headers:{'content-type':o.headers.get('content-type')||'image/jpeg','cache-control':'private, no-store'}})}
+  if(M==='POST'&&(P[0]==='submissions'||P[0]==='intro')){const b=await body();
+   if(P[0]==='intro'){const p=await env.DB.prepare('SELECT slug FROM profiles WHERE slug=?1 AND live IS NOT NULL AND hidden=0').bind(String(b.slug)).first();if(!p)return J({error:'Not found'},404)}
+   await env.DB.prepare('INSERT INTO submissions(type,payload) VALUES(?1,?2)').bind(P[0]==='intro'?'intro':'application',JSON.stringify(b)).run();return J({ok:true})}
+  if(M==='POST'&&P[0]==='chat'){const m=((await body()).messages||[]).slice(-8).filter(x=>x&&(x.role==='user'||x.role==='assistant')&&typeof x.content==='string').map(x=>({role:x.role,content:x.content.slice(0,600)}));
+   if(!m.length)return J({error:'No message'},400);const r=await env.AI.run('@cf/meta/llama-3.1-8b-instruct',{messages:[{role:'system',content:SYS},...m],max_tokens:260});return J({reply:(r.response||'').trim()||'Please use the Contact page.'})}
+  if(P[0]==='admin'){need('admin');
+   if(M==='GET'&&P[1]==='queue'){const a=await env.DB.prepare('SELECT p.slug,u.email,p.pending FROM profiles p JOIN users u ON u.id=p.user_id WHERE p.pending IS NOT NULL').all();
+    const s=await env.DB.prepare("SELECT id,type,payload FROM submissions WHERE status='new' ORDER BY id DESC LIMIT 100").all();
+    return J({profiles:a.results.map(r=>({slug:r.slug,email:r.email,pending:JSON.parse(r.pending)})),subs:s.results.map(r=>({id:r.id,type:r.type,payload:JSON.parse(r.payload)}))})}
+   if(M==='POST'&&P[1]==='decide'){const b=await body(),p=await env.DB.prepare('SELECT * FROM profiles WHERE slug=?1').bind(String(b.slug)).first();if(!p||!p.pending)return J({error:'Not found'},404);
+    if(b.ok){const pd=JSON.parse(p.pending);if(pd.photo.startsWith('/api/media/')){const key=pd.photo.slice(11);
+     const r=await fetch(env.SUPABASE_URL+'/storage/v1/object/copy',{method:'POST',headers:{...SB(env),'content-type':'application/json'},body:JSON.stringify({bucketId:'ligo-pending',sourceKey:key,destinationBucket:'ligo-public',destinationKey:key})});
+     if(!r.ok)return J({error:'Photo could not be published'},502);pd.photo=env.SUPABASE_URL+'/storage/v1/object/public/ligo-public/'+key;await env.DB.prepare("UPDATE media SET status='approved' WHERE key=?1").bind(key).run()}
+     await env.DB.prepare("UPDATE profiles SET live=?1,pending=NULL,note='' WHERE slug=?2").bind(JSON.stringify(pd),p.slug).run();await env.DB.prepare("UPDATE users SET status='active' WHERE id=?1").bind(p.user_id).run()}
+    else await env.DB.prepare('UPDATE profiles SET pending=NULL,note=?1 WHERE slug=?2').bind(String(b.reason||'Please revise and resubmit.').slice(0,300),p.slug).run();return J({ok:true})}
+   if(M==='POST'&&P[1]==='invite'){const e=String((await body()).email||'').trim().toLowerCase();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e))return J({error:'Valid email required'},400);
+    await env.DB.prepare("INSERT OR IGNORE INTO users(email,status) VALUES(?1,'active')").bind(e).run();return J({ok:true})}
+   if(M==='POST'&&P[1]==='resolve'){await env.DB.prepare("UPDATE submissions SET status='done' WHERE id=?1").bind((await body()).id).run();return J({ok:true})}}
+  return J({error:'Not found'},404);
+ }catch(e){const m=String(e.message||'');return J({error:/sign in|Admins|Too large/.test(m)?m:'Server error'},/sign in/.test(m)?401:/Admins/.test(m)?403:/Too large/.test(m)?413:500)}}};

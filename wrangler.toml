@@ -1,0 +1,28 @@
+name = "ligo-space"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+observability = { enabled = true }
+
+# Serves the website from ./public; the Worker code only runs for /api/*
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = ["/api/*"]
+
+# Un-comment and update once your custom domain is on Cloudflare DNS
+# routes = [{ pattern = "ligospace.co.ke", custom_domain = true }]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ligo"
+database_id = "6d6e177a-37b9-4c8d-9b19-fc50dbcc2642"
+
+[ai]
+binding = "AI"
+
+[vars]
+SUPABASE_URL = "https://lpnnntuelgaisoiimuka.supabase.co"
+SITE_URL = "https://ligo-space.ligospace-ke.workers.dev"   # no trailing slash. Change to https://ligospace.co.ke once the domain is live
+SIGNUP = "invite"                                          # "open" when ready for open registration
+FROM_EMAIL = "onboarding@resend.dev"                       # Resend's test sender only delivers to YOUR Resend account email. Verify your own domain in Resend before inviting others.
+# Secrets (set with: npx wrangler secret put NAME): SUPABASE_SERVICE_KEY, RESEND_API_KEY
