@@ -1,4 +1,4 @@
-name = "ligo-space"
+name = "ligo"
 main = "src/index.js"
 compatibility_date = "2026-09-01"
 observability = { enabled = true }
