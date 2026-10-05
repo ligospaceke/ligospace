@@ -1,0 +1,2 @@
+:root{--bg:#fbf5ea;--card:#fff;--ink:#1d2433;--mute:#586274;--line:#e7dcc6;--sun:#a96d14;--sun-ink:#fff;--gold:#e8b04b;--acacia:#1f6b4f;--terra:#b4502c;--deep:#14284b;--on-deep:#fbf5ea;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
