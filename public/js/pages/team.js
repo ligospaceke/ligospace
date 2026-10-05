@@ -4,7 +4,7 @@ import { Section, Link, Path } from '../components/common.js';
 import { PersonCard, Avatar, Socials } from '../components/person.js';
 import { api } from '../data/api.js';
 import { ENV } from '../data/env.js';
-import { PROGRAMS, RESTRICTED, slug, progName } from '../data/content.js';
+import { PROGRAMS, RESTRICTED, NOTICES, slug, progName } from '../data/content.js';
 const yt=u=>{const m=/(?:youtu\.be\/|v=)([\w-]{11})/.exec(u||'');return m?'https://www.youtube-nocookie.com/embed/'+m[1]:null};
 const none=()=>h('p',{},'No one is listed here yet.');
 export const PersonView=(s,founder)=>{const root=h('main');
@@ -28,5 +28,5 @@ const directory=()=>{let prog='';const list=h('div',{class:'grid'}),bar=h('div',
 export const Team=([s])=>s?PersonView(s):directory();
 export const Program=([s])=>{const pr=PROGRAMS.find(p=>slug(p[0])===s);if(!pr)return h('main',{},Section(null,h('p',{},'Program not found.'),Link('/work','See all programs','btn')));
  const list=h('div',{class:'grid'});api.team(s).then(t=>list.replaceChildren(...(t.length?t.map(PersonCard):[none()])),()=>list.replaceChildren(none()));
- return h('main',{},Section(pr[0],h('p',{style:'font-size:1.1rem'},pr[1]),RESTRICTED.includes(s)&&h('div',{class:'note'},'For this program, introductions are arranged by L.I.G.O. SPACE. Members\u2019 direct contact details are not shown.'),h('h3',{},'Members offering this program'),list,
+ return h('main',{},Section(pr[0],h('p',{style:'font-size:1.1rem'},pr[1]),RESTRICTED.includes(s)&&h('div',{class:'note'},'For this program, introductions are arranged by L.I.G.O. SPACE. Members\u2019 direct contact details are not shown.'),NOTICES[s]&&h('div',{class:'note'},NOTICES[s]),h('h3',{},'Members offering this program'),list,
   h('div',{class:'row'},Link('/engage/involve','Offer this program','btn'),Link('/work','All programs','btn ghost'))))};

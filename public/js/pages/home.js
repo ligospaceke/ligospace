@@ -8,7 +8,7 @@ import { HexDiagram } from '../components/diagrams.js';
 import { api } from '../data/api.js';
 import { INDICATORS, SHS } from '../data/config.js';
 import { slug, SLIDES, PROGRAMS, SERVE, PARTNER_WITH, GEO } from '../data/content.js';
-const acti=([t,d],i)=>h('a',{class:'acti g'+(i%6+1),href:'#/program/'+slug(t)},h('div',{class:'cap2'},h('h3',{},t),h('p',{},d)),h('span',{class:'go','aria-hidden':'true'},'\u2192'));
+const acti=([t,d],i)=>h('a',{class:'acti g'+(i%8+1),href:'#/program/'+slug(t)},h('div',{class:'cap2'},h('h3',{},t),h('p',{},d)),h('span',{class:'go','aria-hidden':'true'},'\u2192'));
 const bar=m=>{const p=v=>m.target?Math.min(100,v/m.target*100):0;return h('div',{},h('div',{class:'bt'},m.l,h('span',{},m.target?m.achieved+' / '+m.target:'Target to be set')),h('div',{class:'bar'},h('i',{style:'width:'+p(m.achieved)+'%'}),h('u',{style:'width:'+p(m.verified)+'%'})))};
 const chips=a=>a.map(([t,p])=>h('a',{class:'chip',href:'#'+p},t));
 export const Home=()=>{const impactBox=h('div');api.impact().then(d=>impactBox.replaceChildren(...['reached','youth','partners'].map(k=>d.find(m=>m.k===k)).filter(Boolean).map(bar)),()=>{});

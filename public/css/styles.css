@@ -119,3 +119,22 @@ fieldset{border:1px solid var(--line);border-radius:10px;display:grid;gap:8px;pa
 .cteaser .tx{position:absolute;top:2px;right:6px;border:0;background:none;font-size:1.1rem;cursor:pointer;color:var(--mute)}
 .cpanel{bottom:calc(92px + env(safe-area-inset-bottom,0px))}.chead{justify-content:flex-start;gap:10px}.chead .ht{flex:1;display:flex;flex-direction:column;line-height:1.2}.chead small{opacity:.8}
 @media(prefers-reduced-motion:reduce){.cfab::after{animation:none}.cfab:hover{transform:none}}
+
+/* programs 7-8 */
+.g7{--g:linear-gradient(160deg,#a8325e,#e08b4a)}.g8{--g:linear-gradient(160deg,#1f4f6b,#1f6b4f)}.acti.g7{background:url(../assets/w7.jpg) center/cover,var(--g)}.acti.g8{background:url(../assets/w8.jpg) center/cover,var(--g)}
+/* member dashboard */
+.dbhead{background:linear-gradient(135deg,var(--deep),#2f5088);color:#fff;border-radius:18px;padding:22px;display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-bottom:20px}
+.dbhead .av{border:4px solid var(--gold)}.dbwho{flex:1;min-width:200px}.dbwho h2{color:#fff;margin:0 0 2px}.dbwho p{margin:0 0 8px;color:#cfd9e8}.dbact{display:flex;gap:8px;flex-wrap:wrap}
+.spill{display:inline-block;font:700 .8rem "Nunito Sans",sans-serif;padding:4px 12px;border-radius:99px;background:#fff;color:var(--deep)}.s-live{background:#c9f2dd;color:#0d5a37}.s-review{background:#ffe7ae;color:#7a4f00}.s-changes{background:#ffd3cc;color:#8a2a1c}.s-hidden{background:#e3e7ee;color:#46505e}.s-new{background:#dce8ff;color:#1c3d7a}
+.dash{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:22px;align-items:start}@media(max-width:900px){.dash{grid-template-columns:1fr}}
+.dside{position:sticky;top:90px;display:grid;gap:16px}@media(max-width:900px){.dside{position:static}}
+.sect{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px}.sect>h3{display:flex;align-items:center;gap:10px;margin:0 0 4px}.sect>h3 i{font-style:normal;width:26px;height:26px;border-radius:50%;background:var(--gold);color:var(--deep);display:grid;place-items:center;font:700 .85rem "Nunito Sans",sans-serif}.sect .hint{color:var(--mute);font-size:.9rem;margin:0 0 14px}
+.dsteps{list-style:none;display:flex;margin:12px 0 8px;padding:0;gap:6px}.dsteps li{flex:1;text-align:center;font-size:.8rem;font-weight:700;color:#cfd9e8;border-top:4px solid rgba(255,255,255,.25);padding-top:6px}.dsteps li.done{border-color:#6fd1a8;color:#6fd1a8}.dsteps li.on{border-color:var(--gold);color:var(--gold)}
+.dz{display:flex;gap:16px;align-items:center;border:2px dashed #c9bfa8;border-radius:14px;padding:16px;cursor:pointer;background:#fffdf7;font-weight:700}.dz.over,.dz:focus-within{border-color:var(--terra);background:#fff3d6}.dz small{display:block;color:var(--mute);font-weight:400}.dz .av{width:84px;height:84px}
+.sr{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+.pgrid{display:flex;flex-wrap:wrap;gap:8px}.pchip{font:700 .9rem "Nunito Sans",sans-serif;border:2px solid var(--line);background:#fff;color:var(--ink);border-radius:99px;padding:8px 14px;cursor:pointer}.pchip[aria-pressed="true"]{background:var(--deep);border-color:var(--deep);color:#fff}.pchip[aria-pressed="true"]::before{content:"\2713  "}
+.lgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:600px){.lgrid{grid-template-columns:1fr}}.cnt{text-align:right;font-size:.8rem;color:var(--mute)}
+.savebar{position:sticky;bottom:calc(8px + env(safe-area-inset-bottom,0px));background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 16px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;box-shadow:0 8px 24px rgba(20,40,75,.18);z-index:5}.savebar p{margin:0;font-size:.9rem}.ok{color:var(--acacia)}.bad{color:#a33a2f}.btn:disabled{opacity:.5;cursor:not-allowed}
+.ring{display:flex;align-items:center;gap:14px}.ring .pct{font:700 1.5rem Georgia,serif;color:var(--deep)}.chk{list-style:none;padding:0;margin:10px 0 0;font-size:.9rem}.chk li{padding:3px 0;color:var(--mute)}.chk li.y{color:var(--acacia)}.chk li::before{content:"\25CB  "}.chk li.y::before{content:"\2713  "}
+.tog{display:flex;gap:10px;align-items:flex-start;font-weight:400;cursor:pointer}.tog input{width:20px;height:20px;margin-top:2px;accent-color:var(--terra)}
+.pvcard{text-align:center}.pvcard .av{margin:0 auto 8px}.pvcard h3{margin:4px 0}.pvcard p{color:var(--mute);margin:0 auto 8px;font-size:.92rem}
