@@ -3,21 +3,19 @@ main = "src/index.js"
 compatibility_date = "2026-09-01"
 observability = { enabled = true }
 
+# Your domain. Top-level keys like this must stay ABOVE every [table] heading, otherwise wrangler reads them as part of the table.
+routes = [
+  { pattern = "ligospace.co.ke", custom_domain = true },
+  { pattern = "www.ligospace.co.ke", custom_domain = true }
+]
+# Once https://ligospace.co.ke works, un-comment the next line to switch the old workers.dev address off:
+# workers_dev = false
+
 # Serves the website from ./public; the Worker code only runs for /api/*
 [assets]
 directory = "./public"
 binding = "ASSETS"
 run_worker_first = ["/api/*"]
-
-
-# Custom Domain Routing
-routes = [
-  { pattern = "ligospace.co.ke", custom_domain = true },
-  { pattern = "www.ligospace.co.ke", custom_domain = true }
-]
-
-# Un-comment and update once your custom domain is on Cloudflare DNS
-# routes = [{ pattern = "ligospace.co.ke", custom_domain = true }]
 
 [[d1_databases]]
 binding = "DB"
@@ -27,11 +25,14 @@ database_id = "6d6e177a-37b9-4c8d-9b19-fc50dbcc2642"
 [ai]
 binding = "AI"
 
-
 [vars]
 SUPABASE_URL = "https://lpnnntuelgaisoiimuka.supabase.co"
-SITE_URL = "https://ligospace.co.ke"
 SIGNUP = "invite"                                          # "open" when ready for open registration
+# Chat (optional): create an AI Gateway named ligo in the dashboard (AI > AI Gateway), then un-comment AI_GATEWAY. The other options tune the free allowance.
+# AI_GATEWAY = "ligo"
+# CHAT_DAILY_CAP = "300"
+# CHAT_HOURLY_PER_IP = "15"
+# CHAT_MODEL = "@cf/meta/llama-3.1-8b-instruct-fast"
 # Password hashing cost (Workers allows at most 100000). If you see error 1102 on the free plan, set 30000 or move to a paid plan.
 PW_ITER = "100000"
 # Secrets (set with: npx wrangler secret put NAME): SUPABASE_SERVICE_KEY, SETUP_TOKEN (delete SETUP_TOKEN after the first admin password is set)
