@@ -9,7 +9,7 @@ export const api={
  team:g=>call('GET','/team'+(g?'?program='+encodeURIComponent(g):'')),person:s=>call('GET','/team/'+encodeURIComponent(s)),
  login:(email,password)=>call('POST','/auth/login',{email,password}),register:(email,password)=>call('POST','/auth/register',{email,password}),setup:(email,password,token)=>call('POST','/auth/setup',{email,password,token}),changePassword:(current,next)=>call('PUT','/me/password',{current,next}),logout:()=>call('POST','/auth/logout',{}).finally(()=>disk.set('flag',false)),
  me:()=>call('GET','/me'),saveProfile:b=>call('PUT','/me/profile',b),setHidden:hidden=>call('PUT','/me/visibility',{hidden}),
- intro:b=>call('POST','/intro',b),chat:messages=>call('POST','/chat',{messages}),
+ intro:b=>call('POST','/intro',b),chat:(messages,lang)=>call('POST','/chat',{messages,lang}),
  queue:()=>call('GET','/admin/queue'),decide:(slug,ok,reason)=>call('POST','/admin/decide',{slug,ok,reason}),invite:(email,password)=>call('POST','/admin/invite',{email,password}),resolve:id=>call('POST','/admin/resolve',{id}),
  flag:v=>disk.set('flag',v),signedIn:()=>!!disk.get('flag',false),
  upload:f=>fetch(ENV.API+'/media',{method:'POST',credentials:'include',headers:{'content-type':f.type},body:f}).then(r=>r.json()).then(j=>{if(!j.url)throw new Error(j.error||'Upload failed');return j.url})

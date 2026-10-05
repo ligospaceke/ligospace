@@ -1,23 +1,40 @@
-# L.I.G.O. SPACE: deploy (one Worker serves the website and the API)
+# L.I.G.O. SPACE: deploy (one Worker serves the website and the API at https://ligospace.co.ke)
 
-Layout: `wrangler.toml` + `src/index.js` (API) + `public/` (the website). Same domain for both.
+Layout: `wrangler.toml` + `src/index.js` + `src/chat.js` + `src/faq.js` (API and chat) + `public/` (the website). Same
+domain for both, so sign-in cookies just work. Tip: sign-in cookies belong to one host name. Add a Cloudflare Redirect
+Rule from www.ligospace.co.ke to ligospace.co.ke so people do not end up with two separate sessions.
 
 ## Sign-in is email + password
 
 -  Accounts are created by the admin. Members get a temporary password and must choose their own at first sign-in.
--  No emails are involved in signing in. (The email-sending code was removed. Brevo / Cloudflare Email can be added back
-   later for notifications.)
+-  No email is sent by the site (no Brevo, Resend or similar). New applications and introduction requests wait in the
+   Admin queue; WhatsApp and other notification routes can be added later.
 
 ## Deploy, in this order
 
-1. Database (once): `npx wrangler d1 execute ligo --remote --file=migrate-password.sql` (If you have not run it yet,
-   also run `migrate.sql` for the impact table and the founder profile.)
+1. Database: already up to date on your live database (password columns, impact table, founder profile, chat counters,
+   founder phone). The `.sql` files are only for a fresh database.
 2. Secrets (once each): `npx wrangler secret put SUPABASE_SERVICE_KEY` and `npx wrangler secret put SETUP_TOKEN` (make
    SETUP_TOKEN a long random phrase).
 3. `npx wrangler deploy`
 4. First admin password: open the site > Sign in > **First-time setup (administrator)** > admin email, a new password,
    the setup token. Then sign in.
 5. Remove the token: `npx wrangler secret delete SETUP_TOKEN`
+
+## Chat (English + Kiswahili)
+
+-  Order of answers: safety check, then curated FAQs in `src/faq.js` (free, instant), then free Workers AI, then a plain
+   message with the contact details.
+-  One-time database change: `npx wrangler d1 execute ligo --remote --file=migrate-v3.sql` (also puts the founder's
+   phone on the founder page only). Until it runs, the FAQ answers still work but the AI tier stays off.
+-  Optional AI Gateway: Cloudflare dashboard > AI > AI Gateway > create a gateway named `ligo`, then un-comment
+   `AI_GATEWAY = "ligo"` in `wrangler.toml`. In the gateway settings, turn off or shorten log storage so visitors'
+   questions are not kept.
+-  Free allowance guard: 300 AI answers a day in total and 15 an hour per visitor (`CHAT_DAILY_CAP`,
+   `CHAT_HOURLY_PER_IP`). FAQ answers do not count.
+-  Before launch: have a Kiswahili speaker review the Swahili text in `src/faq.js`, and re-check the helpline numbers in
+   `SAFE` (999/112, Red Cross 1199, Childline 116, GBV 1195).
+-  To add or change an answer: edit `src/faq.js` only, then `npx wrangler deploy`.
 
 ## Day to day
 

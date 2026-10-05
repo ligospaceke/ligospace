@@ -2,6 +2,7 @@
 import { h } from '../core/dom.js';
 import { STATUS } from '../data/config.js';
 import { api } from '../data/api.js';
+import { CONTACT } from '../data/contact.js';
 export const svg=s=>{const d=document.createElement('div');d.innerHTML=s;return d.firstChild};
 export const Badge=s=>h('span',{class:'badge b-'+s},STATUS[s]);
 export const Link=(href,text,cls='')=>h('a',{href:'#'+href,class:cls},text);
@@ -15,13 +16,13 @@ export const Header=cur=>{
  const hd=h('header',{class:'top'},h('div',{class:'wrap'},h('a',{href:'#/',class:'brand'},Logo(),h('span',{},'L.I.G.O.',h('br'),'SPACE')),
   h('nav',{'aria-label':'Main',onclick:e=>{if(e.target.closest('a'))hd.classList.remove('open')}},h('ul',{},NAV.map(item))),Link('/engage/partner','Partner with us','btn sm'),burger));
  const f=document.createDocumentFragment();
- f.append(h('div',{class:'topbar'},h('div',{class:'wrap'},h('div',{},h('span',{},'\u260E +254 791 236 179'),h('span',{},'\u2316 Kajiado South, Kenya')),h('div',{},'Launch: 5 December 2026 \u00B7 ',Link('/account',api.signedIn()?'My dashboard':'Sign in')))),hd);return f};
+ f.append(h('div',{class:'topbar'},h('div',{class:'wrap'},h('div',{},h('span',{},h('a',{href:'tel:'+CONTACT.tel},'\u260E '+CONTACT.phone)),h('span',{},h('a',{href:'mailto:'+CONTACT.email},'\u2709 '+CONTACT.email)),h('span',{},'\u2316 '+CONTACT.base)),h('div',{},'Launch: 5 December 2026 \u00B7 ',Link('/account',api.signedIn()?'My dashboard':'Sign in')))),hd);return f};
 export const Banner=t=>h('div',{class:'banner'},h('div',{class:'wrap'},h('h1',{},t),h('p',{class:'crumbs'},Link('/','Home'),' / '+t)));
 export const Head=(tag,title,cls='')=>h('div',{class:cls},h('span',{class:'tag'},tag),h('h2',{},title));
 export const Footer=()=>h('footer',{},h('div',{class:'wrap'},h('div',{class:'grid'},
  h('div',{},h('h3',{},'L.I.G.O. SPACE'),h('p',{},'Humanity First. Every Life Matters.'),h('p',{},'What Crowns Us: Love.')),
  h('div',{},h('h3',{},'Explore'),[['/about','About'],['/work','Our Work'],['/shs','Synchronized Human System'],['/education','Education'],['/opportunities','Opportunities'],['/impact','Impact'],['/future','Future Initiatives']].map(([p,t])=>Link(p,t))),
  h('div',{},h('h3',{},'Engage'),[['/engage/partner','Partner with us'],['/engage/involve','Get involved'],['/partners','Partners'],['/stories','Stories'],['/events','Events'],['/contact','Contact']].map(([p,t])=>Link(p,t))),
- h('div',{},h('h3',{},'Contact'),h('p',{},'Samuel M.K., Founder & President'),h('p',{},'+254 791 236 179'),h('p',{},'Kajiado South, Kenya'),h('p',{},'TikTok \u00b7 Facebook \u00b7 Instagram \u00b7 YouTube \u00b7 LinkedIn'))),
+ h('div',{},h('h3',{},'Contact'),h('a',{href:'tel:'+CONTACT.tel},CONTACT.phone),h('a',{href:'mailto:'+CONTACT.email},CONTACT.email),h('p',{},CONTACT.base),h('p',{},'TikTok \u00b7 Facebook \u00b7 Instagram \u00b7 YouTube \u00b7 LinkedIn'))),
  h('p',{style:'font-size:.85rem;max-width:none'},'Future initiatives are shown by their actual status and are not available until legally established and authorized.')));
 export const Section=(title,...c)=>h('section',{},h('div',{class:'wrap'},title&&h('h2',{},title),c));

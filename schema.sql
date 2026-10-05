@@ -12,3 +12,6 @@ CREATE INDEX idx_sub ON submissions(status,type);
 -- Impact baseline (editable by admins only; verified can never exceed achieved)
 CREATE TABLE impact(k TEXT PRIMARY KEY,label TEXT,sort INTEGER,target INTEGER DEFAULT 0,achieved INTEGER DEFAULT 0,verified INTEGER DEFAULT 0,updated TEXT DEFAULT CURRENT_TIMESTAMP);
 INSERT INTO impact(k,label,sort) VALUES('reached','People reached',1),('youth','Youth engaged',2),('schools','Schools / institutions engaged',3),('volunteers','Volunteers mobilized',4),('mentors','Mentors / professionals onboarded',5),('sessions','Training sessions delivered',6),('initiatives','Community initiatives conducted',7),('academic','Academic / technical collaborators',8),('partners','Strategic partners',9),('connections','Employment / opportunity connections',10);
+
+-- Chat allowance counters (hashed visitor + daily totals; no message content is stored)
+CREATE TABLE chat_rate(k TEXT PRIMARY KEY,n INTEGER,win INTEGER);

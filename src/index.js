@@ -1,4 +1,5 @@
 // worker/src/index.js: L.I.G.O. SPACE API (D1 + Supabase Storage + Workers AI). Same routes as js/data/api.js demo engine.
+import { chat } from './chat.js';
 const RESTRICTED=['children-vulnerable-communities'];
 
 // Security Headers including permissive CSP for local API & Cloudflare Workers AI/Challenges
@@ -22,9 +23,8 @@ const clean=(b,env)=>({name:String(b.name||'').slice(0,80),headline:String(b.hea
  programs:(Array.isArray(b.programs)?b.programs:[]).slice(0,6).map(String),photo:okPhoto(String(b.photo||''),env)?String(b.photo):'',video:url(b.video)?b.video:'',
  links:Object.fromEntries(Object.entries(b.links||{}).filter(([,v])=>url(v)).slice(0,8))});
 const strip=o=>RESTRICTED.some(r=>o.programs.includes(r))?{...o,links:{},video:'',restricted:true}:o;   // children/vulnerable: no direct contact, ever
-const full=r=>strip({slug:r.slug,founder:r.founder,...JSON.parse(r.live)});
-const sum=r=>{const o=full(r);return{...o,bio:undefined,summary:o.bio.slice(0,160)}};
-const SYS=`You are the assistant on the L.I.G.O. SPACE website. L.I.G.O. SPACE is a human-centered institution rooted in Kajiado South, Kenya, founded by Samuel M.K. Motto: Humanity First. Every Life Matters. What Crowns Us: Love. Official launch: 5 December 2026. It connects people with dignity, education, opportunity, skills, technology and enterprise. Members are independent providers; L.I.G.O. SPACE connects people and does not guarantee services. Visitors choose a pathway on the Partner with us or Get involved pages. Operational: community outreach, youth mentorship, talent and creativity. Developing: digital library, AI learning assistant, Opportunity Circle. Future and NOT available: vocational training center (subject to TVETA), SACCO (subject to SASRA, no financial products offered), university (long-term vision, subject to CUE), app, academy. Never claim future items exist. Never invent impact numbers, people, prices or dates. If unsure, say so and point to the Contact page (phone +254 791 236 179). Keep answers under 90 words, warm and plain. Do not ask for or store personal data.`;
+const full=r=>{const o=strip({slug:r.slug,founder:r.founder,...JSON.parse(r.live)});if(!r.founder)delete o.phone;return o};   // a phone number is only ever shown on the founder profile
+const sum=r=>{const o=full(r);delete o.phone;return{...o,bio:undefined,summary:o.bio.slice(0,160)}};
 const enc=new TextEncoder(),DUMMY=new Uint8Array(16);   // password hashing: PBKDF2-SHA256, salted, iteration count stored with each hash
 const unhex=x=>Uint8Array.from(x.match(/../g).map(y=>parseInt(y,16)));
 const pbk=async(pw,salt,iter)=>hex(await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt,iterations:iter},await crypto.subtle.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveBits']),256));
@@ -87,8 +87,7 @@ export default{async fetch(req,env,ctx){
   if(M==='POST'&&(P[0]==='submissions'||P[0]==='intro')){const b=await body();
    if(P[0]==='intro'){const p=await env.DB.prepare('SELECT slug FROM profiles WHERE slug=?1 AND live IS NOT NULL AND hidden=0').bind(String(b.slug)).first();if(!p)return J({error:'Not found'},404)}
    await env.DB.prepare('INSERT INTO submissions(type,payload) VALUES(?1,?2)').bind(P[0]==='intro'?'intro':'application',JSON.stringify(b)).run();return J({ok:true})}
-  if(M==='POST'&&P[0]==='chat'){const m=((await body()).messages||[]).slice(-8).filter(x=>x&&(x.role==='user'||x.role==='assistant')&&typeof x.content==='string').map(x=>({role:x.role,content:x.content.slice(0,600)}));
-   if(!m.length)return J({error:'No message'},400);const r=await env.AI.run('@cf/meta/llama-3.1-8b-instruct',{messages:[{role:'system',content:SYS},...m],max_tokens:260});return J({reply:(r.response||'').trim()||'Please use the Contact page.'})}
+  if(M==='POST'&&P[0]==='chat'){const r=await chat(env,await body(),req.headers.get('cf-connecting-ip')||'unknown');return r?J(r):J({error:'No message'},400)}
   if(M==='GET'&&P[0]==='impact'){const {results}=await env.DB.prepare('SELECT k,label AS l,target,achieved,verified FROM impact ORDER BY sort').all();return J(results)}
   if(P[0]==='admin'){need('admin');
    if(M==='PUT'&&P[1]==='impact'){const b=await body(),n=v=>Math.max(0,Math.min(1e9,parseInt(v)||0)),ach=n(b.achieved);

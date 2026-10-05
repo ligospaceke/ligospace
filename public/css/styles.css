@@ -138,3 +138,6 @@ fieldset{border:1px solid var(--line);border-radius:10px;display:grid;gap:8px;pa
 .ring{display:flex;align-items:center;gap:14px}.ring .pct{font:700 1.5rem Georgia,serif;color:var(--deep)}.chk{list-style:none;padding:0;margin:10px 0 0;font-size:.9rem}.chk li{padding:3px 0;color:var(--mute)}.chk li.y{color:var(--acacia)}.chk li::before{content:"\25CB  "}.chk li.y::before{content:"\2713  "}
 .tog{display:flex;gap:10px;align-items:flex-start;font-weight:400;cursor:pointer}.tog input{width:20px;height:20px;margin-top:2px;accent-color:var(--terra)}
 .pvcard{text-align:center}.pvcard .av{margin:0 auto 8px}.pvcard h3{margin:4px 0}.pvcard p{color:var(--mute);margin:0 auto 8px;font-size:.92rem}
+
+/* chat language pills */
+.lang{border:1px solid rgba(255,255,255,.5);background:none;color:#fff;border-radius:99px;padding:2px 9px;font:700 .72rem "Nunito Sans",sans-serif;cursor:pointer}.lang[aria-pressed="true"]{background:var(--gold);color:var(--deep);border-color:var(--gold)}.cm .chip{display:inline-block;margin:8px 0 0;font-size:.8rem}

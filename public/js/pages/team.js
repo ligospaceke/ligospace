@@ -14,7 +14,7 @@ export const PersonView=(s,founder)=>{const root=h('main');
   const v=yt(p.video);
   root.append(Section(null,h('div',{class:'split',style:'align-items:start'},h('div',{style:'text-align:center'},Avatar(p,true)),h('div',{},h('h2',{},p.name),h('p',{style:'color:var(--mute)'},p.headline||''),
    h('div',{},(p.programs||[]).map(x=>Link('/program/'+x,progName(x),'chip'))),p.restricted?h('p',{class:'note'},'Introductions for this program are arranged by L.I.G.O. SPACE.'):Socials(p.links),
-   (p.bio||'').split('\n').map(t=>h('p',{},t)),v&&h('iframe',{src:v,title:'Video',allowfullscreen:true,loading:'lazy',style:'width:100%;aspect-ratio:16/9;border:0;border-radius:12px'}))),
+   p.founder&&p.phone&&h('p',{},'\u260E ',h('a',{href:'tel:'+p.phone.replace(/\s/g,'')},p.phone)),(p.bio||'').split('\n').map(t=>h('p',{},t)),v&&h('iframe',{src:v,title:'Video',allowfullscreen:true,loading:'lazy',style:'width:100%;aspect-ratio:16/9;border:0;border-radius:12px'}))),
    founder&&h('div',{style:'margin-top:30px'},h('p',{class:'quote'},'\u201cMost people are not necessarily lost; many are simply unsynchronized.\u201d'),h('h3',{},'Our story'),Path('Vision','Community','L.I.G.O. SPACE','Human development','Synchronized Human System','Partnerships','Digital ecosystem','Future institutions')),
    h('div',{class:'card',style:'margin-top:30px;max-width:600px'},h('h3',{},'Get in touch via L.I.G.O. SPACE'),h('p',{style:'margin-bottom:12px'},'We connect people with members, who are independent providers.'),f),
    h('div',{class:'row'},Link('/team','Back to the team','btn ghost'))))},
