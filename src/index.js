@@ -1,6 +1,16 @@
 // worker/src/index.js: L.I.G.O. SPACE API (D1 + Supabase Storage + Workers AI). Same routes as js/data/api.js demo engine.
 const RESTRICTED=['children-vulnerable-communities'];
-const J=(o,s=200,h={})=>new Response(JSON.stringify(o),{status:s,headers:{'content-type':'application/json',...h}});
+
+// Security Headers including permissive CSP for local API & Cloudflare Workers AI/Challenges
+const SECURITY_HEADERS = {
+  'content-type': 'application/json',
+  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com https://challenges.cloudflare.com; connect-src 'self' https://www.ligospace.co.ke https://ligospace.co.ke https://lpnnntuelgaisoiimuka.supabase.co; img-src 'self' data: https:; style-src 'self' 'unsafe-inline';",
+  'X-Frame-Options': 'DENY',
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'strict-origin-when-cross-origin'
+};
+
+const J=(o,s=200,h={})=>new Response(JSON.stringify(o),{status:s,headers:{...SECURITY_HEADERS,...h}});
 const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
 const rnd=()=>hex(crypto.getRandomValues(new Uint8Array(24)));
 const sha=async s=>hex(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)));
