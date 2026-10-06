@@ -1,2 +1,16 @@
-:root{--bg:#fbf5ea;--card:#fff;--ink:#1d2433;--mute:#586274;--line:#e7dcc6;--sun:#a96d14;--sun-ink:#fff;--gold:#e8b04b;--acacia:#1f6b4f;--terra:#b4502c;--deep:#14284b;--on-deep:#fbf5ea;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+/* Colour tokens. Light is the default; the theme module sets data-theme="dark" on <html>. Components must use these tokens, never raw colours. */
+:root{color-scheme:light;
+ --bg:#fbf5ea;--surface:#ffffff;--surface2:#f1ece0;--card:var(--surface);
+ --ink:#1d2433;--head:#14284b;--mute:#586274;--line:#e7dcc6;
+ --sun:#905d10;--sun-ink:#ffffff;--gold:#e8b04b;--on-gold:#14284b;
+ --terra:#b4502c;--acacia:#1f6b4f;--amber:#9a5a00;--danger:#a33a2f;
+ --note-bg:#fff3d6;--dz-bg:#fffdf7;--sel-bg:#14284b;--sel-ink:#ffffff;
+ --deep:#14284b;--on-deep:#fbf5ea;
+ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root[data-theme="dark"]{color-scheme:dark;
+ --bg:#0f1a2b;--surface:#17263d;--surface2:#1f3250;
+ --ink:#e8edf4;--head:#f5f8fc;--mute:#a9b6c7;--line:#2b405e;
+ --sun:#e8b04b;--sun-ink:#1a1200;
+ --terra:#ee8b66;--acacia:#5fc4a0;--amber:#f0b45a;--danger:#ff9a8a;
+ --note-bg:#3a2f14;--dz-bg:#1b2c46;--sel-bg:#e8b04b;--sel-ink:#1a1200}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}

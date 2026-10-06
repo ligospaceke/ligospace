@@ -1,5 +1,6 @@
 // worker/src/index.js: L.I.G.O. SPACE API (D1 + Supabase Storage + Workers AI). Same routes as js/data/api.js demo engine.
-import { chat } from './chat.js';
+import { chat, MODELS, chosen, lab } from './chat.js';
+import { portal } from './portal.js';
 const RESTRICTED=['children-vulnerable-communities'];
 
 // Security Headers including permissive CSP for local API & Cloudflare Workers AI/Challenges
@@ -40,6 +41,7 @@ export default{async fetch(req,env,ctx){
  try{
   const body=async()=>{const t=await req.text();if(t.length>12000)throw new Error('Too large');return t?JSON.parse(t):{}};
   const me=await who(req,env),need=r=>{if(!me)throw new Error('Please sign in');if(r&&me.role!==r)throw new Error('Admins only')};
+  const pr=await portal({env,req,P,M,me,body,J,need,h:{url,okPhoto:p=>okPhoto(p,env),SB:()=>SB(env)}});if(pr)return pr;
   if(M==='GET'&&P[0]==='team'){
    if(P[1]){const r=await env.DB.prepare('SELECT * FROM profiles WHERE slug=?1 AND live IS NOT NULL AND hidden=0').bind(P[1]).first();return r?J(full(r)):J({error:'Not found'},404)}
    const g=u.searchParams.get('program')||'';
@@ -90,9 +92,12 @@ export default{async fetch(req,env,ctx){
   if(M==='POST'&&P[0]==='chat'){const r=await chat(env,await body(),req.headers.get('cf-connecting-ip')||'unknown');return r?J(r):J({error:'No message'},400)}
   if(M==='GET'&&P[0]==='impact'){const {results}=await env.DB.prepare('SELECT k,label AS l,target,achieved,verified FROM impact ORDER BY sort').all();return J(results)}
   if(P[0]==='admin'){need('admin');
+   if(M==='GET'&&P[1]==='ai')return J({models:MODELS,current:await chosen(env)});
+   if(M==='POST'&&P[1]==='ai-lab')return J(await lab(env,(await body()).models));
+   if(M==='PUT'&&P[1]==='ai-model'){const b=await body();if(!MODELS.some(m=>m.id===b.model))return J({error:'Unknown model'},400);await env.DB.prepare("INSERT INTO settings(k,v) VALUES('chat_model',?1) ON CONFLICT(k) DO UPDATE SET v=?1").bind(b.model).run();return J({ok:true})}
    if(M==='PUT'&&P[1]==='impact'){const b=await body(),n=v=>Math.max(0,Math.min(1e9,parseInt(v)||0)),ach=n(b.achieved);
     await env.DB.prepare('UPDATE impact SET target=?1,achieved=?2,verified=?3,updated=CURRENT_TIMESTAMP WHERE k=?4').bind(n(b.target),ach,Math.min(n(b.verified),ach),String(b.k)).run();return J({ok:true})}
-   if(M==='GET'&&P[1]==='queue'){const a=await env.DB.prepare('SELECT p.slug,u.email,p.pending FROM profiles p JOIN users u ON u.id=p.user_id WHERE p.pending IS NOT NULL').all();
+   if(M==='GET'&&P[1]==='queue'){const a=await env.DB.prepare('SELECT p.slug,u.email,p.pending FROM profiles p JOIN users u ON u.id=p.user_id WHERE p.pending IS NOT NULL AND (p.note IS NULL OR length(p.note)=0)').all();
     const s=await env.DB.prepare("SELECT id,type,payload FROM submissions WHERE status='new' ORDER BY id DESC LIMIT 100").all();
     return J({profiles:a.results.map(r=>({slug:r.slug,email:r.email,pending:JSON.parse(r.pending)})),subs:s.results.map(r=>({id:r.id,type:r.type,payload:JSON.parse(r.payload)}))})}
    if(M==='POST'&&P[1]==='decide'){const b=await body(),p=await env.DB.prepare('SELECT * FROM profiles WHERE slug=?1').bind(String(b.slug)).first();if(!p||!p.pending)return J({error:'Not found'},404);
@@ -100,7 +105,7 @@ export default{async fetch(req,env,ctx){
      const r=await fetch(env.SUPABASE_URL+'/storage/v1/object/copy',{method:'POST',headers:{...SB(env),'content-type':'application/json'},body:JSON.stringify({bucketId:'ligo-pending',sourceKey:key,destinationBucket:'ligo-public',destinationKey:key})});
      if(!r.ok)return J({error:'Photo could not be published'},502);pd.photo=env.SUPABASE_URL+'/storage/v1/object/public/ligo-public/'+key;await env.DB.prepare("UPDATE media SET status='approved' WHERE key=?1").bind(key).run()}
      await env.DB.prepare("UPDATE profiles SET live=?1,pending=NULL,note='' WHERE slug=?2").bind(JSON.stringify(pd),p.slug).run();await env.DB.prepare("UPDATE users SET status='active' WHERE id=?1").bind(p.user_id).run()}
-    else await env.DB.prepare('UPDATE profiles SET pending=NULL,note=?1 WHERE slug=?2').bind(String(b.reason||'Please revise and resubmit.').slice(0,300),p.slug).run();return J({ok:true})}
+    else await env.DB.prepare('UPDATE profiles SET note=?1 WHERE slug=?2').bind(String(b.reason||'Please revise and resubmit.').slice(0,300),p.slug).run();return J({ok:true})}
    if(M==='POST'&&P[1]==='invite'){const b=await body(),e=String(b.email||'').trim().toLowerCase().slice(0,120);   // creates the account, or resets its password, with a temporary password the admin passes on
     if(!okEmail(e)||!okPw(b.password))return J({error:'Enter a valid email and a temporary password of 8 or more characters'},400);
     const ex=await env.DB.prepare('SELECT * FROM users WHERE email=?1').bind(e).first();if(ex&&ex.role==='admin')return J({error:'Admin accounts change their own password from the dashboard'},400);const h=await hashPw(b.password,env);

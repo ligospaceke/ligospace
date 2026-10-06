@@ -15,3 +15,10 @@ INSERT INTO impact(k,label,sort) VALUES('reached','People reached',1),('youth','
 
 -- Chat allowance counters (hashed visitor + daily totals; no message content is stored)
 CREATE TABLE chat_rate(k TEXT PRIMARY KEY,n INTEGER,win INTEGER);
+
+-- Admin-chosen settings (the chat model is switched from the Admin page, no redeploy needed)
+CREATE TABLE settings(k TEXT PRIMARY KEY,v TEXT);
+
+-- Member posts and products (each goes live only after an admin approves it)
+CREATE TABLE posts(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,live TEXT,pending TEXT,note TEXT,created TEXT DEFAULT CURRENT_TIMESTAMP,updated TEXT DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX idx_posts_user ON posts(user_id);

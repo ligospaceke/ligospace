@@ -2,6 +2,7 @@
 import { h } from '../core/dom.js';
 import { Section, Link, Path } from '../components/common.js';
 import { PersonCard, Avatar, Socials } from '../components/person.js';
+import { PostCard } from '../components/postcard.js';
 import { api } from '../data/api.js';
 import { ENV } from '../data/env.js';
 import { PROGRAMS, RESTRICTED, NOTICES, slug, progName } from '../data/content.js';
@@ -11,12 +12,12 @@ export const PersonView=(s,founder)=>{const root=h('main');
  api.person(s).then(p=>{
   const f=h('form',{onsubmit:e=>{e.preventDefault();const d=Object.fromEntries(new FormData(f));api.intro({slug:p.slug,...d}).then(()=>f.replaceChildren(h('div',{class:'note',role:'status'},'Thank you. L.I.G.O. SPACE will pass your request on and follow up with you.'))).catch(x=>alert(x.message))}},
    h('label',{},'Your name',h('input',{name:'name',required:true})),h('label',{},'Your email',h('input',{name:'email',type:'email',required:true})),h('label',{},'What would you like to ask or discuss?',h('textarea',{name:'message',rows:3,required:true})),h('button',{class:'btn',type:'submit'},'Request an introduction'));
-  const v=yt(p.video);
+  const v=yt(p.video),pb=h('div');api.posts({member:p.slug}).then(l=>{if(l.length)pb.replaceChildren(h('h2',{style:'margin-top:30px'},'Posts & products'),h('div',{class:'grid'},l.map(x=>PostCard(x,{here:true}))))},()=>{});
   root.append(Section(null,h('div',{class:'split',style:'align-items:start'},h('div',{style:'text-align:center'},Avatar(p,true)),h('div',{},h('h2',{},p.name),h('p',{style:'color:var(--mute)'},p.headline||''),
    h('div',{},(p.programs||[]).map(x=>Link('/program/'+x,progName(x),'chip'))),p.restricted?h('p',{class:'note'},'Introductions for this program are arranged by L.I.G.O. SPACE.'):Socials(p.links),
    p.founder&&p.phone&&h('p',{},'\u260E ',h('a',{href:'tel:'+p.phone.replace(/\s/g,'')},p.phone)),(p.bio||'').split('\n').map(t=>h('p',{},t)),v&&h('iframe',{src:v,title:'Video',allowfullscreen:true,loading:'lazy',style:'width:100%;aspect-ratio:16/9;border:0;border-radius:12px'}))),
    founder&&h('div',{style:'margin-top:30px'},h('p',{class:'quote'},'\u201cMost people are not necessarily lost; many are simply unsynchronized.\u201d'),h('h3',{},'Our story'),Path('Vision','Community','L.I.G.O. SPACE','Human development','Synchronized Human System','Partnerships','Digital ecosystem','Future institutions')),
-   h('div',{class:'card',style:'margin-top:30px;max-width:600px'},h('h3',{},'Get in touch via L.I.G.O. SPACE'),h('p',{style:'margin-bottom:12px'},'We connect people with members, who are independent providers.'),f),
+   pb,h('div',{class:'card',style:'margin-top:30px;max-width:600px'},h('h3',{},'Get in touch via L.I.G.O. SPACE'),h('p',{style:'margin-bottom:12px'},'We connect people with members, who are independent providers.'),f),
    h('div',{class:'row'},Link('/team','Back to the team','btn ghost'))))},
   ()=>root.append(Section(null,h('p',{},'This profile is not available.'),Link('/team','Back to the team','btn'))));return root};
 export const Founder=()=>PersonView(ENV.FOUNDER,true);
