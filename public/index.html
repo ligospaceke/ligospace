@@ -17,156 +17,35 @@
       href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;700&family=Libre+Baskerville:wght@400;700&display=swap" />
     <link rel="stylesheet" href="css/tokens.css" />
     <link rel="stylesheet" href="css/styles.css" />
-    <style>
-      /* loading screen: replaced automatically when the app renders */
-      body {
-        margin: 0;
-        background: #14284b;
-      }
-      .boot {
-        min-height: 100vh;
-        display: grid;
-        place-content: center;
-        justify-items: center;
-        gap: 14px;
-        text-align: center;
-        padding: 24px;
-        color: #fbf5ea;
-        font-family: Georgia, "Times New Roman", serif;
-        background: radial-gradient(circle at 50% 38%, #2f5088 0, #14284b 52%, #0c1a33 100%);
-      }
-      .boot svg {
-        overflow: visible;
-        filter: drop-shadow(0 0 22px rgba(232, 176, 75, 0.35));
-      }
-      .boot .rays {
-        transform-box: view-box;
-        transform-origin: 50% 50%;
-        animation: bspin 16s linear infinite;
-      }
-      .boot .sun {
-        transform-box: fill-box;
-        transform-origin: center;
-        animation: bpulse 2.2s ease-in-out infinite;
-      }
-      .boot .arm {
-        animation: brise 2.2s ease-in-out infinite;
-      }
-      .bw {
-        font-size: 1.55rem;
-        font-weight: 700;
-        letter-spacing: 0.16em;
-        color: #fff;
-      }
-      .bt {
-        font-size: 0.95rem;
-        font-style: italic;
-        color: #e8b04b;
-      }
-      .bb {
-        width: 170px;
-        height: 4px;
-        border-radius: 2px;
-        background: rgba(255, 255, 255, 0.18);
-        overflow: hidden;
-        margin-top: 6px;
-      }
-      .bb i {
-        display: block;
-        height: 100%;
-        width: 42%;
-        border-radius: 2px;
-        background: linear-gradient(90deg, transparent, #e8b04b, transparent);
-        animation: bslide 1.3s ease-in-out infinite;
-      }
-      @keyframes bspin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-      @keyframes bpulse {
-        50% {
-          transform: scale(1.18);
-        }
-      }
-      @keyframes brise {
-        50% {
-          transform: translateY(-3px);
-        }
-      }
-      @keyframes bslide {
-        0% {
-          transform: translateX(-110%);
-        }
-        100% {
-          transform: translateX(260%);
-        }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .boot * {
-          animation: none !important;
-        }
-      }
-    </style>
+    <!-- Loader styles: fully namespaced under .ligo-boot, replaced when the app renders -->
+    <link rel="stylesheet" href="css/loader.css" />
   </head>
   <body>
     <div id="app">
-      <div class="boot" role="status" aria-live="polite" aria-label="Loading L.I.G.O. SPACE">
+      <div class="ligo-boot" role="status" aria-live="polite" aria-label="Loading L.I.G.O. SPACE">
         <svg viewBox="0 0 96 96" width="104" height="104" aria-hidden="true">
           <circle cx="48" cy="48" r="44" fill="none" stroke="#e8b04b" stroke-width="3" opacity=".9" />
-          <g class="rays" stroke="#e8b04b" stroke-width="3" stroke-linecap="round">
+          <g class="ligo-boot__rays" stroke="#e8b04b" stroke-width="3" stroke-linecap="round">
             <path d="M48 6v8M48 82v8M6 48h8M82 48h8M18 18l6 6M72 72l6 6M18 78l6-6M72 24l6-6" />
           </g>
-          <circle class="sun" cx="48" cy="36" r="10" fill="#e8b04b" />
+          <circle class="ligo-boot__sun" cx="48" cy="36" r="10" fill="#e8b04b" />
           <path
-            class="arm"
+            class="ligo-boot__arm"
             d="M22 70q26-34 52 0"
             fill="none"
             stroke="#fbf5ea"
             stroke-width="7"
             stroke-linecap="round" />
         </svg>
-        <div class="bw">L.I.G.O. SPACE</div>
-        <div class="bt">Humanity First. Every Life Matters.</div>
-        <div class="bb"><i></i></div>
+        <div class="ligo-boot__word">L.I.G.O. SPACE</div>
+        <div class="ligo-boot__tag">Humanity First. Every Life Matters.</div>
+        <div class="ligo-boot__bar"><i></i></div>
       </div>
     </div>
     <noscript
       ><p style="padding: 24px; font-family: sans-serif">L.I.G.O. SPACE needs JavaScript turned on.</p></noscript
     >
-    <script>
-      /* Shows a message only if the site itself fails to start. Blocked analytics, missing images etc. are ignored, and nothing is ever wiped once the page is showing. */
-      (function () {
-        var app = document.getElementById("app");
-        function fail(msg) {
-          if (app.getAttribute("data-ready")) return;
-          app.innerHTML =
-            '<div style="margin:24px;padding:16px;border:2px solid #b4502c;border-radius:10px;background:#fff;font:15px/1.5 system-ui,sans-serif;color:#1d2433">' +
-            "<b>L.I.G.O. SPACE could not start.</b><br>" +
-            String(msg).replace(/</g, "&lt;") +
-            "<br><br>Please refresh the page. If this keeps happening, contact the team on 0182809790.</div>";
-        }
-        window.addEventListener(
-          "error",
-          function (e) {
-            var t = e.target;
-            if (t && t !== window) {
-              if (t.tagName === "SCRIPT" && t.src && t.src.indexOf(location.origin + "/js/") === 0)
-                fail("A site file could not be loaded (" + t.src.split("/").slice(-2).join("/") + ").");
-              return;
-            }
-            if (e.filename && e.filename.indexOf(location.origin) === 0)
-              fail(
-                (e.message || "Script error") + " (" + e.filename.split("/").slice(-2).join("/") + ":" + e.lineno + ")"
-              );
-          },
-          true
-        );
-        window.addEventListener("unhandledrejection", function (e) {
-          fail((e.reason && e.reason.message) || e.reason);
-        });
-      })();
-    </script>
+    <script src="js/loader.js"></script>
     <script type="module" src="js/main.js"></script>
   </body>
 </html>
