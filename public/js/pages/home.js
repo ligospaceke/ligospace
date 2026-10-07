@@ -1,6 +1,8 @@
 // js/pages/home.js
 import { h } from '../core/dom.js';
 import { Section, Link, Head } from '../components/common.js';
+import { PostCard } from '../components/postcard.js';
+import { today } from '../core/date.js';
 import { Carousel } from '../components/carousel.js';
 import { FindBar } from '../components/findbar.js';
 import { Roadmap } from '../components/roadmap.js';
@@ -11,7 +13,9 @@ import { slug, SLIDES, PROGRAMS, SERVE, PARTNER_WITH, GEO } from '../data/conten
 const acti=([t,d],i)=>h('a',{class:'acti g'+(i%8+1),href:'#/program/'+slug(t)},h('div',{class:'cap2'},h('h3',{},t),h('p',{},d)),h('span',{class:'go','aria-hidden':'true'},'\u2192'));
 const bar=m=>{const p=v=>m.target?Math.min(100,v/m.target*100):0;return h('div',{},h('div',{class:'bt'},m.l,h('span',{},m.target?m.achieved+' / '+m.target:'Target to be set')),h('div',{class:'bar'},h('i',{style:'width:'+p(m.achieved)+'%'}),h('u',{style:'width:'+p(m.verified)+'%'})))};
 const chips=a=>a.map(([t,p])=>h('a',{class:'chip',href:'#'+p},t));
-export const Home=()=>{const impactBox=h('div');api.impact().then(d=>impactBox.replaceChildren(...['reached','youth','partners'].map(k=>d.find(m=>m.k===k)).filter(Boolean).map(bar)),()=>{});
+export const Home=()=>{const impactBox=h('div');const launch=h('div',{class:'card'},h('h3',{},'Official launch: 5 December 2026'),h('p',{},'Community, leadership, academia, partners and young people. Details and registration will be posted on the Events page.'),h('div',{class:'row'},Link('/events','Event details','btn sm')));
+ const evBox=h('div',{class:'grid',style:'margin-top:20px'},launch,h('div',{class:'photo'},'Stories coming soon'));
+ api.posts({type:'event,story'}).then(l=>{const t=today(),ev=l.filter(p=>p.type==='event'&&p.date>=t).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0).slice(0,2),st=l.filter(p=>p.type==='story').slice(0,2),cards=[...ev,...st].map(p=>PostCard(p));if(cards.length)evBox.replaceChildren(launch,...cards)},()=>{});api.impact().then(d=>impactBox.replaceChildren(...['reached','youth','partners'].map(k=>d.find(m=>m.k===k)).filter(Boolean).map(bar)),()=>{});
  return h('main',{},Carousel(SLIDES),FindBar(),
  h('section',{},h('div',{class:'wrap'},Head('What we do','Programs that connect people with opportunity'),h('div',{class:'grid',style:'margin-top:20px'},PROGRAMS.map(acti)))),
  h('section',{class:'alt'},h('div',{class:'wrap split'},
@@ -30,6 +34,4 @@ export const Home=()=>{const impactBox=h('div');api.impact().then(d=>impactBox.r
  h('section',{class:'cta'},h('div',{class:'wrap split'},h('div',{},Head('Partner with us','We cannot build alone'),h('p',{},'Bring your expertise, technology, network, resources, knowledge and experience.'),h('div',{class:'row'},Link('/engage/partner','Choose your pathway','btn'))),
   h('div',{class:'grid',style:'grid-template-columns:1fr 1fr'},PARTNER_WITH.slice(0,4).map(([t,p],i)=>h('a',{class:'pcard g'+(i+1),href:'#'+p},h('div',{class:'cap2'},h('h3',{},t))))))),
  h('section',{},h('div',{class:'wrap'},Head('Our reach','From Kajiado South to Kenya, Africa and the world'),h('div',{class:'g3x',style:'margin-top:20px'},GEO.map(([s,t],i)=>h('div',{class:'geo g'+[1,2,4,3][i]},h('div',{class:'cap2'},h('small',{},s),h('h3',{},t))))))),
- h('section',{class:'alt'},h('div',{class:'wrap'},Head('Events & stories','Latest from the L.I.G.O. community'),h('div',{class:'grid',style:'margin-top:20px'},
-  h('div',{class:'card'},h('h3',{},'Official launch: 5 December 2026'),h('p',{},'Community, leadership, academia, partners and young people. Details and registration coming soon.'),h('div',{class:'row'},Link('/events','Event details','btn sm'))),
-  [1,2].map(()=>h('div',{},h('div',{class:'photo'},'Story coming soon'),h('p',{style:'margin-top:8px;color:var(--mute)'},'Shared only with consent, with dignity.')))))));};
+ h('section',{class:'alt'},h('div',{class:'wrap'},Head('Events & stories','Latest from the L.I.G.O. community'),evBox,h('div',{class:'row'},Link('/events','All events','btn ghost'),Link('/stories','All stories','btn ghost')))));};
