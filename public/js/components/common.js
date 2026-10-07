@@ -10,10 +10,10 @@ export const Link=(href,text,cls='')=>h('a',{href:'#'+href,class:cls},text);
 export const Path=(...a)=>h('div',{class:'path'},a.flatMap((x,i)=>i?[h('span',{class:'arr','aria-hidden':'true'},'\u2192'),x]:[x]));
 export const Logo=()=>svg('<svg viewBox="0 0 48 48" width="42" height="42" aria-hidden="true"><circle class="lg-ring" cx="24" cy="24" r="22" fill="none" stroke-width="3"/><circle cx="24" cy="15" r="5" fill="#c8892b"/><path d="M11 35q13-16 26 0" fill="none" stroke="#c8892b" stroke-width="4" stroke-linecap="round"/><path d="M24 4v4M8 14l3 2M40 14l-3 2" stroke="#c8892b" stroke-width="2.5" stroke-linecap="round"/></svg>');
 export const NAV=[['Home','/'],['About',null,[['Who we are','/about'],['Team','/team'],['Founder','/founder'],['Synchronized Human System','/shs'],['Future Initiatives','/future']]],['Programs',null,[['Our Work','/work'],['Education','/education'],['Opportunities','/opportunities'],['Showcase','/showcase']]],['Impact','/impact'],['Partners','/partners'],['Stories & Events',null,[['Stories','/stories'],['Events','/events']]],['Get Involved','/engage/involve'],['Contact','/contact']];
-export const Header=cur=>{
+export const Header=(cur,portal)=>{
  const act=p=>p===cur||(p!=='/'&&p.startsWith(cur+'/'));
  const item=([t,p,sub])=>sub?h('li',{class:'dd'+(sub.some(s=>act(s[1]))?' on':'')},h('button',{class:'dd-btn','aria-haspopup':'true'},t+' \u25BE'),h('ul',{class:'menu'},sub.map(([st,sp])=>h('li',{},Link(sp,st))))):h('li',{},h('a',{href:'#'+p,'aria-current':act(p)?'page':null},t));
- const burger=h('button',{class:'burger','aria-label':'Menu','aria-expanded':'false',onclick:()=>{const o=hd.classList.toggle('open');burger.setAttribute('aria-expanded',o)}},'\u2630');
+ const burger=h('button',{class:'burger','aria-label':portal?'Dashboard menu':'Menu','aria-expanded':'false',onclick:()=>{const o=portal?document.body.classList.toggle('nav-open'):hd.classList.toggle('open');burger.setAttribute('aria-expanded',String(o));burger.textContent=o?'\u2715':'\u2630'}},'\u2630');
  const hd=h('header',{class:'top'},h('div',{class:'wrap'},h('a',{href:'#/',class:'brand'},Logo(),h('span',{},'L.I.G.O.',h('br'),'SPACE')),
   h('nav',{'aria-label':'Main',onclick:e=>{if(e.target.closest('a'))hd.classList.remove('open')}},h('ul',{},NAV.map(item))),ThemeToggle(),Link('/engage/partner','Partner with us','btn sm'),burger));
  const f=document.createDocumentFragment();

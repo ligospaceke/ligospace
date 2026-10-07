@@ -40,7 +40,7 @@ Passwords are hashed with PBKDF2 (100,000 rounds, the maximum Workers allows). T
 - Supabase free projects pause after about a week of inactivity; photos go offline until resumed.
 
 ## Dashboard, posts and themes
-- `/account` is the member dashboard and `/admin` the admin one. Both use a sidebar on the left (desktop) and a tab bar at the bottom (phones). Sections: Overview, My profile, Posts, Settings; admins also get Review, Members, Impact, AI lab.
+- `/account` is the member dashboard and `/admin` the admin one. Both use a sidebar on the left (desktop). On phones the header's menu button (the three lines) opens the dashboard menu as a slide-in panel instead of the site menu, and it has a "Back to the website" link; on public pages the same button still opens the normal site menu. Sections: Overview, My profile, Posts, Settings; admins also get Review, Members, Impact, AI lab.
 - Members share up to 6 short posts or products. Each is reviewed in **Admin > Review > Posts & products** before it shows on `/showcase` and on the member's profile. A rejected item keeps its text and the admin's note so the member can fix and resubmit. Members of the children / vulnerable program never show direct links.
 - Light / dark mode: the sun/moon button in the header and sidebar, or Settings > Appearance. All colours live in `public/css/tokens.css`. Rule for new work: use the tokens (`var(--surface)`, `var(--ink)`, `var(--head)`, ...), never raw hex colours, so text stays readable in both themes.
 - Loader: `public/css/loader.css` (every rule scoped to `.ligo-boot`), the markup in `index.html`, and `public/js/boot/guard.js`. It cannot change the site's colours.
