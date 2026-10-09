@@ -1,9 +1,10 @@
 // src/portal.js: posts, products, stories and events (member content), the members list, and moderation.
 // Members' items are reviewed first; items posted by an admin go live immediately. index.js calls portal(ctx) first; it returns a Response, or null if the route is not ours.
 const RESTRICTED=['children-vulnerable-communities'],LIMIT=6,ADMIN_LIMIT=200;
-const TYPES=['post','product','story','event'],MAXB={post:600,product:600,story:4000,event:1500};
+const TYPES=['post','product','story','event','opportunity'],MAXB={post:600,product:600,story:4000,event:1500,opportunity:1500};
+const KINDS=['jobs','training','scholarships','mentorship','volunteering','fellowships','partnerships','entrepreneurship','community'];
 const cleanPost=(b,h)=>{const t=TYPES.includes(b.type)?b.type:'post',d=/^\d{4}-\d{2}-\d{2}$/.test(String(b.date||''))?String(b.date):'';
- return{type:t,title:String(b.title||'').trim().slice(0,80),body:String(b.body||'').trim().slice(0,MAXB[t]),price:t==='product'?String(b.price||'').trim().slice(0,40):'',date:t==='event'?d:'',place:t==='event'?String(b.place||'').trim().slice(0,80):'',link:h.url(b.link)?String(b.link):'',image:h.okPhoto(String(b.image||''))?String(b.image):''}};
+ return{type:t,title:String(b.title||'').trim().slice(0,80),body:String(b.body||'').trim().slice(0,MAXB[t]),price:t==='product'?String(b.price||'').trim().slice(0,40):'',date:t==='event'||t==='opportunity'?d:'',place:t==='event'||t==='opportunity'?String(b.place||'').trim().slice(0,80):'',kind:t==='opportunity'&&KINDS.includes(b.kind)?b.kind:'',link:h.url(b.link)?String(b.link):'',image:h.okPhoto(String(b.image||''))?String(b.image):''}};
 const pub=r=>{const p=JSON.parse(r.live),pr=r.prof?JSON.parse(r.prof):null,team=r.role==='admin'||!pr,hide=!team&&RESTRICTED.some(k=>(pr.programs||[]).includes(k));   // members in the children / vulnerable program never show direct links
  return{id:r.id,at:r.at,...p,link:hide?'':p.link,author:team?{slug:'',name:'L.I.G.O. SPACE',photo:''}:{slug:r.slug,name:pr.name,photo:pr.photo||''}}};
 const SEL="SELECT p.id,p.live,p.updated AS at,u.role,pr.slug,pr.live AS prof FROM posts p JOIN users u ON u.id=p.user_id LEFT JOIN profiles pr ON pr.user_id=p.user_id WHERE p.live IS NOT NULL AND (u.role='admin' OR (pr.live IS NOT NULL AND pr.hidden=0))";
@@ -13,9 +14,27 @@ async function publish(env,h,img){const key=img.slice(11);   // private bucket -
 export async function portal(c){const {env,req,P,M,me,body,J,need,h}=c;
  if(M==='GET'&&P[0]==='posts'){
   if(P[1]){const r=await env.DB.prepare(SEL+' AND p.id=?1').bind(parseInt(P[1])||0).first();return r?J(pub(r)):J({error:'Not found'},404)}
-  const q=new URL(req.url).searchParams,ts=(q.get('type')||'').split(',').filter(t=>TYPES.includes(t)),T=ts.length?ts:TYPES,t4=[...T,...Array(4-T.length).fill(T[0])],mem=q.get('member')||'';
-  const {results}=await env.DB.prepare(SEL+" AND (?1='' OR pr.slug=?1) AND json_extract(p.live,'$.type') IN (?2,?3,?4,?5) ORDER BY p.updated DESC LIMIT 60").bind(mem,...t4).all();
+  const q=new URL(req.url).searchParams,ts=(q.get('type')||'').split(',').filter(t=>TYPES.includes(t)),T=ts.length?ts:TYPES,t4=[...T,...Array(5-T.length).fill(T[0])],mem=q.get('member')||'';
+  const {results}=await env.DB.prepare(SEL+" AND (?1='' OR pr.slug=?1) AND json_extract(p.live,'$.type') IN (?2,?3,?4,?5,?6) ORDER BY p.updated DESC LIMIT 60").bind(mem,...t4).all();
   return J(results.map(pub))}
+
+ if(M==='GET'&&P[0]==='match'){const q=new URL(req.url).searchParams,g=k=>(q.get(k)||'').toLowerCase().trim().slice(0,80);
+  const interest=g('interest'),skills=g('skills').split(',').map(x=>x.trim()).filter(Boolean).slice(0,8),loc=g('location'),mob=g('mobility'),av=g('availability'),today=new Date().toISOString().slice(0,10);
+  const {results:ops}=await env.DB.prepare(SEL+" AND json_extract(p.live,'$.type')='opportunity' ORDER BY p.updated DESC LIMIT 100").all();
+  const hit=(t,w)=>w&&t.includes(w);
+  const sc=ops.map(pub).filter(o=>!o.date||o.date>=today).map(o=>{const t=(o.title+' '+o.body+' '+(o.place||'')).toLowerCase();let s=0;const why=[];
+   if(interest&&(o.kind===interest||hit(t,interest))){s+=4;why.push('Matches your interest')}
+   const sk=skills.filter(k=>hit(t,k));if(sk.length){s+=2*sk.length;why.push('Uses your skills: '+sk.join(', '))}
+   const pl=(o.place||'').toLowerCase();if(/remote|online/.test(pl)||/remote|online/.test(t)){s+=(mob==='remote'||mob==='none'||!mob)?2:1;why.push('Can be done remotely')}
+   else if(loc&&hit(pl,loc)){s+=3;why.push('Close to '+loc)}
+   return{...o,score:s,why}}).sort((a,b)=>b.score-a.score);
+  const matches=(sc.some(o=>o.score>0)?sc.filter(o=>o.score>0):sc).slice(0,6);
+  const {results:ms}=await env.DB.prepare("SELECT slug,live FROM profiles WHERE live IS NOT NULL AND hidden=0 AND founder=0 LIMIT 200").all();
+  const people=ms.map(r=>{const p=JSON.parse(r.live);if((p.programs||[]).some(k=>RESTRICTED.includes(k)))return null;let s=0;const t=((p.headline||'')+' '+(p.bio||'')).toLowerCase();
+   if(interest&&((p.programs||[]).some(k=>k.includes(interest))||t.includes(interest)))s+=3;s+=2*skills.filter(k=>(p.skills||[]).includes(k)||t.includes(k)).length;
+   if(loc&&(p.location||'').toLowerCase().includes(loc))s+=2;if(av&&p.availability===av)s+=1;
+   return s?{slug:r.slug,name:p.name,headline:p.headline||'',photo:p.photo||'',skills:p.skills||[],location:p.location||'',score:s}:null}).filter(Boolean).sort((a,b)=>b.score-a.score).slice(0,6);
+  return J({matches,people})}
  if(P[0]==='me'&&P[1]==='posts'){need();const adm=me.role==='admin',lim=adm?ADMIN_LIMIT:LIMIT;
   if(M==='GET'){const {results}=await env.DB.prepare('SELECT id,live,pending,note FROM posts WHERE user_id=?1 ORDER BY updated DESC').bind(me.id).all();
    return J({limit:lim,direct:adm,posts:results.map(r=>({id:r.id,note:r.note,live:r.live&&JSON.parse(r.live),pending:r.pending&&JSON.parse(r.pending)}))})}

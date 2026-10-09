@@ -22,7 +22,9 @@ const okPhoto=(p,env)=>p.startsWith('/api/media/')||p.startsWith(env.SUPABASE_UR
 const SB=env=>({authorization:'Bearer '+env.SUPABASE_SERVICE_KEY,apikey:env.SUPABASE_SERVICE_KEY});
 const clean=(b,env)=>({name:String(b.name||'').slice(0,80),headline:String(b.headline||'').slice(0,120),bio:String(b.bio||'').slice(0,1500),
  programs:(Array.isArray(b.programs)?b.programs:[]).slice(0,6).map(String),photo:okPhoto(String(b.photo||''),env)?String(b.photo):'',video:url(b.video)?b.video:'',
- links:Object.fromEntries(Object.entries(b.links||{}).filter(([,v])=>url(v)).slice(0,8))});
+ links:Object.fromEntries(Object.entries(b.links||{}).filter(([,v])=>url(v)).slice(0,8)),
+ skills:(Array.isArray(b.skills)?b.skills:[]).map(x=>String(x).trim().toLowerCase().slice(0,24)).filter(Boolean).slice(0,8),location:String(b.location||'').trim().slice(0,60),
+ availability:['weekdays','weekends','flexible'].includes(b.availability)?b.availability:''});
 const strip=o=>RESTRICTED.some(r=>o.programs.includes(r))?{...o,links:{},video:'',restricted:true}:o;   // children/vulnerable: no direct contact, ever
 const full=r=>{const o=strip({slug:r.slug,founder:r.founder,...JSON.parse(r.live)});if(!r.founder)delete o.phone;return o};   // a phone number is only ever shown on the founder profile
 const sum=r=>{const o=full(r);delete o.phone;return{...o,bio:undefined,summary:o.bio.slice(0,160)}};

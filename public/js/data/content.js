@@ -33,3 +33,27 @@ export const GEO=[['Our roots','Kajiado South'],['National','Kenya'],['Continent
 export const slug=t=>t.toLowerCase().replace(/['\u2019]/g,'').replace(/&/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 export const RESTRICTED=['children-vulnerable-communities'];
 export const progName=s=>(PROGRAMS.find(p=>slug(p[0])===s)||[s])[0];
+
+/* ---- Talent & Opportunities (the main agenda) ---- */
+export const OPP_KINDS=[['jobs','Jobs'],['training','Training'],['scholarships','Scholarships'],['mentorship','Mentorship'],['volunteering','Volunteering'],['fellowships','Fellowships'],['partnerships','Partnerships'],['entrepreneurship','Entrepreneurship'],['community','Community']];
+export const kindName=k=>(OPP_KINDS.find(x=>x[0]===k)||[k,''])[1];
+export const AVAIL=[['weekdays','Weekdays'],['weekends','Weekends'],['flexible','Flexible']];
+export const MOBILITY=[['local','I can travel locally'],['regional','I can travel across Kenya'],['remote','Remote only'],['none','I cannot travel right now']];
+export const PROMISE='We don’t just connect people to opportunities. We help make the opportunity reachable.';
+export const HOW=[['Match','Tell us your interest, skills, goals, location and availability. We find the closest opportunities and people.'],['Prepare','Get what you need: a profile people can trust, a short pitch, documents and skills.'],['Connect','L.I.G.O. SPACE introduces you to the right person or organization.'],['Mobilize','We help with the real gaps: transport, data, tools, a mentor.'],['Follow through','We stay with you from first contact to the outcome.'],['Measure impact','Every outcome is documented, so what we report is true.']];
+export const PREPARE={jobs:['Update your profile and add a photo','Write 3 lines on what you can do','Have your ID and certificates ready','Prepare a short CV'],training:['Check dates and where it takes place','Plan transport and data','Tell us what you want to learn'],scholarships:['Gather results and recommendation letters','Check the deadline and documents','Write a short personal statement'],mentorship:['Decide what you want to learn','Pick a time you can keep','Prepare 2 questions'],volunteering:['Check the dates and your availability','Tell us your skills','Plan how you will get there'],fellowships:['Gather your documents and referees','Write what you want to achieve','Check the deadline'],partnerships:['Write what you offer in 3 lines','Have a link to your work','Choose who should speak for you'],entrepreneurship:['Describe your product or idea simply','Have a price and a first customer in mind','Add photos or a link'],community:['Say what you can contribute','Check the time and place','Bring a friend']};
+export const MENU=[
+ ['Who we are',[['About','/about'],['Founder','/founder'],['Synchronized Human System','/shs'],['Future initiatives','/future']]],
+ ['What we do',[['Our work','/work'],['Education','/education']]],
+ ['Talent & Opportunities',[['Find opportunities','/match'],['Opportunities','/opportunities'],['Talent & team','/team'],['Showcase','/showcase']]],
+ ['Join us',[['Get involved','/engage/involve'],['Partner with us','/engage/partner'],['Who we partner with','/partners']]],
+ ['Stories & Impact',[['Stories','/stories'],['Events','/events'],['Impact','/impact'],['Contact','/contact']]]];
+export const MANIFESTO=[['What we believe','Every person carries value, potential and purpose. Most are not lost; many are simply unsynchronized. Opportunity needs access, a pathway and someone who walks it with you.'],['What we do','We make talent visible and opportunity reachable: we match, prepare, connect and mobilize, then follow through and measure the impact.'],['What we will not do','We will not invent numbers, expose children or vulnerable people, or promise what we have not yet been authorized to offer.']];
+
+// Header menu: four groups only. MENU (above) still lists every page for the site map.
+export const NAVMENU=[
+ ['Who we are',[['About us','/about'],['Our work','/work'],['Education','/education'],['Founder','/founder'],['Synchronized Human System','/shs'],['Future initiatives','/future']]],
+ ['Talent & Opportunities',[['Find opportunities','/match'],['Opportunities','/opportunities'],['Talent & team','/team'],['Showcase','/showcase']]],
+ ['Join us',[['Get involved','/engage/involve'],['Partner with us','/engage/partner'],['Who we partner with','/partners']]],
+ ['Stories & Impact',[['Stories','/stories'],['Events','/events'],['Impact','/impact'],['Contact','/contact']]]];
+export const KAELEN='https://lord-kaelen.kaelentechnologies.workers.dev/#/';
